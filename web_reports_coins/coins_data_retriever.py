@@ -93,7 +93,6 @@ class MyMongoClient(Subscriber):
         self.database = self._c[db_name]
 
 
-
 def get_arg(index, default=None):
     """
     Grabs a value from the command line or returns the default one.
@@ -106,6 +105,19 @@ def get_arg(index, default=None):
 
 def get_data():
 
+    db_name = 'BB_coins'
+    trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
+    collection = '{}_coinigy_account'.format(trader)
+    try:
+        db_user = 'Writeuser'
+        db_password = os.environ['MONGO-WRITE-PASSWORD']
+        host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+    except KeyError:
+        host = 'localhost'
+    db = MyMongoClient(db_name, collection_name=collection,
+                       host=host)
+
+    json_data = []
     market_history_total_data = []
     balance_curr_codes = []
     market_names = []
@@ -121,51 +133,13 @@ def get_data():
 
     for market_name in market_names:
         market_history_data = api.get_market_history(market_name, count=1)["result"][0]
-        market_history_total_data.append(market_history_data)
+        balance_curr_code = market_name.split('-')[1]
+        json_data.append({
+                          'balance_curr_code': balance_curr_code,
+                          'last_price': market_history_data['Price'],
+                          'TimeStamp': market_history_data['TimeStamp']})
 
-    # response = requests.get('https://coinmarketcap.com/all/views/all/')
-    # data_content = html.fromstring(response.content)
-    # db_name = 'cc_coins'
-    #
-    # currency_lists = data_content.xpath(
-    #     '//div[@class="table-responsive"]//tbody/tr')
-    # # currency_names = data_content.xpath(
-    # #     '//div[@class="table-responsive"]//tbody//td[@class="no-wrap currency-name"]//a//text()')
-    #
-    # for currency_list in currency_lists:
-    #     # currency_name = str(currency_list.xpath('./td[@class="no-wrap currency-name"]//a//text()')[0])
-    #     currency_data = [i.strip() for i in currency_list.xpath(
-    #         './td//text()') if i.strip()]
-    #
-    #     data = {
-    #         'timestamp': dt.datetime.now(),
-    #         'Symbol': currency_data[2],
-    #         'Market Cap': currency_data[3],
-    #         'Price': currency_data[4],
-    #         'Circulating Supply': currency_data[5],
-    #         'Volume (24h)': currency_data[6],
-    #         '% 1h': currency_data[7],
-    #         '% 24h': currency_data[8],
-    #         '% 7d': currency_data[9]
-    #     }
-    #     currency_name = currency_data[2]
-    #     coin_name = get_arg(2, currency_name)
-    #     # key = 'b7c761ab7ca0fbe560a1c6941f49e8b0'
-    #     # secret = '72fc68c63ba7ab80cc65fb9cf1d214f7'
-    #
-    #     collection = '{}'.format(coin_name)
-    #     try:
-    #         db_user = 'Writeuser'
-    #         db_password = os.environ['MONGO-WRITE-PASSWORD']
-    #         host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
-    #     except KeyError:
-    #         host = 'localhost'
-
-        # coin = CoinigyCoin(key, secret)
-
-        db = MyMongoClient(db_name, collection_name=collection,
-                           host=host)
-        db.insert_one(data)
+        db.insert_one(json_data)
 
 if __name__ == "__main__":
 

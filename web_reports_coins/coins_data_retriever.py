@@ -13,6 +13,7 @@ import datetime as dt
 import json
 import requests
 from time import sleep
+from bittrex import Bittrex
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # from common import get_arg
@@ -92,6 +93,7 @@ class MyMongoClient(Subscriber):
         self.database = self._c[db_name]
 
 
+
 def get_arg(index, default=None):
     """
     Grabs a value from the command line or returns the default one.
@@ -103,43 +105,61 @@ def get_arg(index, default=None):
 
 
 def get_data():
-    response = requests.get('https://coinmarketcap.com/all/views/all/')
-    data_content = html.fromstring(response.content)
-    db_name = 'cc_coins'
 
-    currency_lists = data_content.xpath(
-        '//div[@class="table-responsive"]//tbody/tr')
-    # currency_names = data_content.xpath(
-    #     '//div[@class="table-responsive"]//tbody//td[@class="no-wrap currency-name"]//a//text()')
+    market_history_total_data = []
+    balance_curr_codes = []
+    market_names = []
 
-    for currency_list in currency_lists:
-        # currency_name = str(currency_list.xpath('./td[@class="no-wrap currency-name"]//a//text()')[0])
-        currency_data = [i.strip() for i in currency_list.xpath(
-            './td//text()') if i.strip()]
+    key, secret = "54680684a8cb481c9f99a5f0ccaa1841", "4009a8a233114ab8a16f03c856d03752"
+    api = Bittrex(api_key=key, api_secret=secret)
+    markets_data = api.get_markets()["result"]
 
-        data = {
-            'timestamp': dt.datetime.now(),
-            'Symbol': currency_data[2],
-            'Market Cap': currency_data[3],
-            'Price': currency_data[4],
-            'Circulating Supply': currency_data[5],
-            'Volume (24h)': currency_data[6],
-            '% 1h': currency_data[7],
-            '% 24h': currency_data[8],
-            '% 7d': currency_data[9]
-        }
-        currency_name = currency_data[2]
-        coin_name = get_arg(2, currency_name)
-        # key = 'b7c761ab7ca0fbe560a1c6941f49e8b0'
-        # secret = '72fc68c63ba7ab80cc65fb9cf1d214f7'
+    for markets_datum in markets_data:
+        if markets_datum["BaseCurrency"] == 'BTC':
+            balance_curr_codes.append(markets_datum["MarketCurrency"])
+            market_names.append(markets_datum["MarketName"])
 
-        collection = '{}'.format(coin_name)
-        try:
-            db_user = 'Writeuser'
-            db_password = os.environ['MONGO-WRITE-PASSWORD']
-            host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
-        except KeyError:
-            host = 'localhost'
+    for market_name in market_names:
+        market_history_data = api.get_market_history(market_name, count=1)["result"][0]
+        market_history_total_data.append(market_history_data)
+
+    # response = requests.get('https://coinmarketcap.com/all/views/all/')
+    # data_content = html.fromstring(response.content)
+    # db_name = 'cc_coins'
+    #
+    # currency_lists = data_content.xpath(
+    #     '//div[@class="table-responsive"]//tbody/tr')
+    # # currency_names = data_content.xpath(
+    # #     '//div[@class="table-responsive"]//tbody//td[@class="no-wrap currency-name"]//a//text()')
+    #
+    # for currency_list in currency_lists:
+    #     # currency_name = str(currency_list.xpath('./td[@class="no-wrap currency-name"]//a//text()')[0])
+    #     currency_data = [i.strip() for i in currency_list.xpath(
+    #         './td//text()') if i.strip()]
+    #
+    #     data = {
+    #         'timestamp': dt.datetime.now(),
+    #         'Symbol': currency_data[2],
+    #         'Market Cap': currency_data[3],
+    #         'Price': currency_data[4],
+    #         'Circulating Supply': currency_data[5],
+    #         'Volume (24h)': currency_data[6],
+    #         '% 1h': currency_data[7],
+    #         '% 24h': currency_data[8],
+    #         '% 7d': currency_data[9]
+    #     }
+    #     currency_name = currency_data[2]
+    #     coin_name = get_arg(2, currency_name)
+    #     # key = 'b7c761ab7ca0fbe560a1c6941f49e8b0'
+    #     # secret = '72fc68c63ba7ab80cc65fb9cf1d214f7'
+    #
+    #     collection = '{}'.format(coin_name)
+    #     try:
+    #         db_user = 'Writeuser'
+    #         db_password = os.environ['MONGO-WRITE-PASSWORD']
+    #         host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+    #     except KeyError:
+    #         host = 'localhost'
 
         # coin = CoinigyCoin(key, secret)
 
@@ -151,7 +171,7 @@ if __name__ == "__main__":
 
         # Time setting.
         next_call = dt.datetime.now()
-        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 3600)))
+        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 60)))
         # Main loop.
         while True:
             now = dt.datetime.now()
@@ -161,3 +181,4 @@ if __name__ == "__main__":
                     get_data()
                 except:
                     continue
+

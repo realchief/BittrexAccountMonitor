@@ -109,7 +109,7 @@ def get_arg(index, default=None):
         return default
 
 
-def get_data():
+def get_data(number):
 
     db_name = 'BB_coins'
     trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
@@ -170,8 +170,8 @@ if __name__ == "__main__":
             if now >= next_call:
                 try:
                     next_call = now + time_between_calls
-                    get_data()
                     number += 1
+                    get_data(number)
                 except:
                     continue
 

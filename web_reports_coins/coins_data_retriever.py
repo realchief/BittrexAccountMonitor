@@ -14,6 +14,10 @@ import json
 import requests
 from time import sleep
 from bittrex import Bittrex
+
+import pymongo
+from pymongo import MongoClient
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # from common import get_arg
@@ -49,6 +53,7 @@ class MyMongoClient(Subscriber):
 
     def insert_one(self, data):
         self.collection.insert_one(data)
+        # self.insert_one(data)
         print('------table name-----')
         print(self.collection)
         print('Inserted: \n{}'.format(data))
@@ -108,15 +113,25 @@ def get_data():
 
     db_name = 'BB_coins'
     trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
-    collection = '{}_coinigy_account'.format(trader)
+    collection = '{}_bittrex_account'.format(trader)
     try:
-        db_user = 'Writeuser'
+        db_user = 'Readuser'
         db_password = os.environ['MONGO-WRITE-PASSWORD']
+        # db_password = 'jbh4S3pCpTGCdIGGVOU6'
         host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+        # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
+        # host = 'mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@10.8.0.2:27017/admin'
+
+        # mongoserver_uri = "mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@10.8.0.2:27017/admin"
+        # connection = MongoClient(host=mongoserver_uri)
+        # db = connection['BB_coins']
+        # db_collection = db['VIVEK_Bittrex_account']
+
     except KeyError:
         host = 'localhost'
-    db = MyMongoClient(db_name, collection_name=collection,
-                       host=host)
+        # db = MyMongoClient(db_name, collection_name=collection,
+        #                    host=host)
+    db = MyMongoClient(db_name, collection_name=collection, host=host)
 
     balance_curr_codes = []
     market_names = []
@@ -138,6 +153,8 @@ def get_data():
             'balance_curr_code': balance_curr_code,
             'last_price': market_history_data['Price'],
             'TimeStamp': market_history_data['TimeStamp']})
+
+        # db_collection.insert_one(json_data)
         db.insert_one(json_data)
 
 

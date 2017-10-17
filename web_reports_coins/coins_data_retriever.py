@@ -53,7 +53,6 @@ class MyMongoClient(Subscriber):
 
     def insert_one(self, data):
         self.collection.insert_one(data)
-        # self.insert_one(data)
         print('------table name-----')
         print(self.collection)
         print('Inserted: \n{}'.format(data))
@@ -115,23 +114,20 @@ def get_data(number):
     trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
     collection = '{}_bittrex_account'.format(trader)
     try:
-        db_user = 'Readuser'
-        db_password = os.environ['MONGO-WRITE-PASSWORD']
-        # db_password = 'jbh4S3pCpTGCdIGGVOU6'
-        host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+        # db_user = 'Writeuser'
+        # db_password = os.environ['MONGO-WRITE-PASSWORD']
+        # db_password = 'TYHJ8ttfZ6JPRvSZbqcW'
+        # host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
         # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
-        # host = 'mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@10.8.0.2:27017/admin'
 
-        # mongoserver_uri = "mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@10.8.0.2:27017/admin"
-        # connection = MongoClient(host=mongoserver_uri)
-        # db = connection['BB_coins']
-        # db_collection = db['VIVEK_Bittrex_account']
+        mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
+        connection = MongoClient(host=mongoserver_uri)
+        db = connection['BB_coins']
+        db_collection = db['VIVEK_Bittrex_account']
 
     except KeyError:
         host = 'localhost'
-        # db = MyMongoClient(db_name, collection_name=collection,
-        #                    host=host)
-    db = MyMongoClient(db_name, collection_name=collection, host=host)
+        db_collection = MyMongoClient(db_name, collection_name=collection, host=host)
 
     balance_curr_codes = []
     market_names = []
@@ -149,21 +145,22 @@ def get_data(number):
         market_history_data = api.get_market_history(market_name, count=1)["result"][0]
         balance_curr_code = market_name.split('-')[1]
         json_data = ({
-            'ID': str(number),
+            'Number': str(number),
             'balance_curr_code': balance_curr_code,
             'last_price': market_history_data['Price'],
             'TimeStamp': market_history_data['TimeStamp']})
 
-        # db_collection.insert_one(json_data)
-        db.insert_one(json_data)
-
+        db_collection.insert_one(json_data)
+        print('------table name-----')
+        print(collection)
+        print('Inserted: \n{}'.format(json_data))
 
 if __name__ == "__main__":
 
         # Time setting.
         number = 0
         next_call = dt.datetime.now()
-        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 120)))
+        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 300)))
         # Main loop.
         while True:
             now = dt.datetime.now()

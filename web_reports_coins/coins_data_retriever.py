@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 # from common import get_arg
 # Update Python Path to be able to load custom modules. Do not change line position.
 
+# number = 0
 
 class Subscriber:
     def __init__(self, name=None):
@@ -117,8 +118,6 @@ def get_data():
     db = MyMongoClient(db_name, collection_name=collection,
                        host=host)
 
-    json_data = []
-    market_history_total_data = []
     balance_curr_codes = []
     market_names = []
 
@@ -135,17 +134,19 @@ def get_data():
         market_history_data = api.get_market_history(market_name, count=1)["result"][0]
         balance_curr_code = market_name.split('-')[1]
         json_data = ({
-                      'balance_curr_code': balance_curr_code,
-                      'last_price': market_history_data['Price'],
-                      'TimeStamp': market_history_data['TimeStamp']})
-
+            'ID': str(number),
+            'balance_curr_code': balance_curr_code,
+            'last_price': market_history_data['Price'],
+            'TimeStamp': market_history_data['TimeStamp']})
         db.insert_one(json_data)
+
 
 if __name__ == "__main__":
 
         # Time setting.
+        number = 0
         next_call = dt.datetime.now()
-        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 60)))
+        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 120)))
         # Main loop.
         while True:
             now = dt.datetime.now()
@@ -153,6 +154,7 @@ if __name__ == "__main__":
                 try:
                     next_call = now + time_between_calls
                     get_data()
+                    number += 1
                 except:
                     continue
 

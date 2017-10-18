@@ -145,7 +145,7 @@ def get_data(number):
         market_history_data = api.get_market_history(market_name, count=1)["result"][0]
         balance_curr_code = market_name.split('-')[1]
         json_data = ({
-            'Number': str(number),
+            'Number': number,
             'balance_curr_code': balance_curr_code,
             'last_price': market_history_data['Price'],
             'TimeStamp': market_history_data['TimeStamp']})

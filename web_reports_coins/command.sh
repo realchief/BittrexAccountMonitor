@@ -1,0 +1,9 @@
+#!/bin/bash
+python coins_data_retriever.py KEVIN c3733d87f90745f6868c9d9c8785f618 b168c0b64d0f4ecfb8ecf898806bb445 &
+python coins_data_retriever.py VIVEK 54680684a8cb481c9f99a5f0ccaa1841 4009a8a233114ab8a16f03c856d03752 &
+python coins_data_retriever.py LANDON 141172172c12458f8d0051d4c2618559 2d944113b64844f2b3ad33030f99101a & 
+python coins_data_retriever.py RAJ 298778d714094075ba934077d0edbb62 3102cd9c72c24e85926421f94a99c27e & 
+python coins_data_retriever.py FRANK 501ecb91011042759bfc39138a778588 69ef9f9312f7403aa7e5be2712ec0616 &
+python coins_data_retriever.py RAFAEL 287148571d8d4a99aaad836bed887bf9 1c49169addd74ac1acd8367ed493457a &
+python coins_data_retriever.py AYAN 9bd35de03d9745baa80bd2abdd06c6de 9e72cfe59ba14ac281aeea1f012cf791 &
+python coins_data_retriever.py VICKY 782eaa263bc6445f820a6b0b5a204046 7e4edddbd670488494d991e934adee2f &

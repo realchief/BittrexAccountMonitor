@@ -110,9 +110,16 @@ def get_arg(index, default=None):
 
 def get_data(number):
 
+    with open('accountkey.json') as data_file:
+        data = json.load(data_file)
+        print(data)
+
+    # json_data = open(accountkey.json).read()
+    # data = json.loads(json_data)
+
     db_name = 'BB_coins'
     trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
-    collection = '{}_bittrex_account'.format(trader)
+    collection_name = '{}_bittrex_account'.format(trader)
     try:
         # db_user = 'Writeuser'
         # db_password = os.environ['MONGO-WRITE-PASSWORD']
@@ -123,11 +130,11 @@ def get_data(number):
         mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
         connection = MongoClient(host=mongoserver_uri)
         db = connection['BB_coins']
-        db_collection = db['VIVEK_Bittrex_account']
+        db_collection = db[collection_name]
 
     except KeyError:
         host = 'localhost'
-        db_collection = MyMongoClient(db_name, collection_name=collection, host=host)
+        db_collection = MyMongoClient(db_name, collection_name=collection_name, host=host)
 
     balance_curr_codes = []
     market_names = []
@@ -152,7 +159,7 @@ def get_data(number):
 
         db_collection.insert_one(json_data)
         print('------table name-----')
-        print(collection)
+        print(collection_name)
         print('Inserted: \n{}'.format(json_data))
 
 if __name__ == "__main__":

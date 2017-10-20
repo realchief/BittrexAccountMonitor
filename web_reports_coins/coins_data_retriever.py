@@ -115,55 +115,90 @@ def get_data(number):
     with open('accountkey.json') as data_file:
         keydata = json.load(data_file)
         tradernumbers = len(keydata)
-
+    markets_data = []
+    collection_names = []
     for traderindex in keydata:
         # print(traderindex)
+
         trader_name = traderindex['name']
         trader_key = traderindex['Key']
         trader_secret = traderindex['Secret']
 
         trader = get_arg(1, trader_name)  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
-        collection_name = '{}_bittrex_account'.format(trader)
-        try:
-            # db_user = 'Writeuser'
-            # db_password = os.environ['MONGO-WRITE-PASSWORD']
-            # db_password = 'TYHJ8ttfZ6JPRvSZbqcW'
-            # host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
-            # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
-
-            mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
-            connection = MongoClient(host=mongoserver_uri)
-            db = connection['BB_coins']
-            db_collection = db[collection_name]
-
-        except KeyError:
-            host = 'localhost'
-            db_collection = MyMongoClient(db_name, collection_name=collection_name, host=host)
-
-        balance_curr_codes = []
-        market_names = []
+        collection_names.append('{}_bittrex_account'.format(trader))
+        # try:
+        #     # db_user = 'Writeuser'
+        #     # db_password = os.environ['MONGO-WRITE-PASSWORD']
+        #     # db_password = 'TYHJ8ttfZ6JPRvSZbqcW'
+        #     # host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+        #     # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
+        #
+        #     mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
+        #     connection = MongoClient(host=mongoserver_uri)
+        #     db = connection['BB_coins']
+        #     db_collection = db[collection_name]
+        #
+        # except KeyError:
+        #     host = 'localhost'
+        #     db_collection = MyMongoClient(db_name, collection_name=collection_name, host=host)
 
         api = Bittrex(api_key=trader_key, api_secret=trader_secret)
-        markets_data = api.get_markets()["result"]
+        market = api.get_markets()["result"]
+        markets_data.append(market)
 
-        for markets_datum in markets_data:
-            if markets_datum["BaseCurrency"] == 'BTC':
-                balance_curr_codes.append(markets_datum["MarketCurrency"])
-                market_names.append(markets_datum["MarketName"])
+    balance_curr_codes = []
 
-        for market_name in market_names:
-            market_history_data = api.get_market_history(market_name, count=1)["result"][0]
-            balance_curr_code = market_name.split('-')[1]
+    for i in range(len(markets_data)):
+        balance_curr_codes.append([])
+        for data in markets_data[i]:
+            if data["BaseCurrency"] == 'BTC':
+                balance_curr_codes[i].append(data["MarketCurrency"])
+    print(balance_curr_codes)
+
+    for i in range(len(balance_curr_codes)):
+        for balance_curr_code in balance_curr_codes[i]:
+            market_history_data = api.get_market_history('BTC-' + balance_curr_code, count=1)["result"][0]
             json_data = ({
                 'Number': number,
                 'balance_curr_code': balance_curr_code,
                 'last_price': market_history_data['Price'],
                 'TimeStamp': market_history_data['TimeStamp']})
 
+            try:
+                # db_user = 'Writeuser'
+                # db_password = os.environ['MONGO-WRITE-PASSWORD']
+                # db_password = 'TYHJ8ttfZ6JPRvSZbqcW'
+                # host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
+                # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
+
+                mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
+                connection = MongoClient(host=mongoserver_uri)
+                db = connection['BB_coins']
+                db_collection = db[collection_names[i]]
+
+            except KeyError:
+                host = 'localhost'
+                db_collection = MyMongoClient(db_name, collection_name=collection_names[i], host=host)
+
             db_collection.insert_one(json_data)
-            print('------table name-----')
-            print(collection_name)
+            print(collection_names[i])
             print('Inserted: \n{}'.format(json_data))
+
+
+
+    # for balance_curr_code in balance_curr_codes:
+    #     market_history_data = api.get_market_history('BTC-' + balance_curr_code, count=1)["result"][0]
+    #     json_data = ({
+    #         'Number': number,
+    #         'balance_curr_code': balance_curr_code,
+    #         'last_price': market_history_data['Price'],
+    #         'TimeStamp': market_history_data['TimeStamp']})
+
+        # db_collection.insert_one(json_data)
+        # print('------table name-----')
+        # print(collection_name)
+        # print('Inserted: \n{}'.format(json_data))
+    # return print(collection_name)
 
 if __name__ == "__main__":
 

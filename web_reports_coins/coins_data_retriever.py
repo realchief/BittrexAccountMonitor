@@ -111,7 +111,12 @@ def get_arg(index, default=None):
 def get_data(number):
 
     db_name = 'BB_coins'
-    trader = get_arg(1, 'VIVEK')  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
+    trader = get_arg(1)  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
+
+    with open('accountkey.json') as data_file:
+        data = json.load(data_file)
+        print(data)
+
     collection = '{}_bittrex_account'.format(trader)
     try:
         # db_user = 'Writeuser'
@@ -121,6 +126,7 @@ def get_data(number):
         # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
 
         mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
+        # mongoserver_uri = "mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@127.0.0:1"
         connection = MongoClient(host=mongoserver_uri)
         db = connection['BB_coins']
         db_collection = db['VIVEK_Bittrex_account']

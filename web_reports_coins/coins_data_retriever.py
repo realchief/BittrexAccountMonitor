@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # number = 0
 
+
 class Subscriber:
     def __init__(self, name=None):
         if not name:
@@ -113,11 +114,11 @@ def get_data(number):
     db_name = 'BB_coins'
     trader = get_arg(1)  # 'LANDON', 'CHRISTIAN' OR 'VIVEK.
 
-    with open('accountkey.json') as data_file:
-        data = json.load(data_file)
-        print(data)
+    # with open('accountkey.json') as data_file:
+    #     data = json.load(data_file)
+    #     print(data)
 
-    collection = '{}_bittrex_account'.format(trader)
+    collection_name = '{}_bittrex_account'.format(trader)
     try:
         # db_user = 'Writeuser'
         # db_password = os.environ['MONGO-WRITE-PASSWORD']
@@ -129,16 +130,20 @@ def get_data(number):
         # mongoserver_uri = "mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@127.0.0:1"
         connection = MongoClient(host=mongoserver_uri)
         db = connection['BB_coins']
-        db_collection = db['VIVEK_Bittrex_account']
+        # db_collection = db['VIVEK_Bittrex_account']
+        db_collection = db[collection_name]
 
     except KeyError:
         host = 'localhost'
-        db_collection = MyMongoClient(db_name, collection_name=collection, host=host)
+        db_collection = MyMongoClient(db_name, collection_name=collection_name, host=host)
 
     balance_curr_codes = []
     market_names = []
 
-    key, secret = "54680684a8cb481c9f99a5f0ccaa1841", "4009a8a233114ab8a16f03c856d03752"
+    # key, secret = "141172172c12458f8d0051d4c2618559", "2d944113b64844f2b3ad33030f99101a"
+    key = get_arg(2)
+    secret = get_arg(3)
+
     api = Bittrex(api_key=key, api_secret=secret)
     markets_data = api.get_markets()["result"]
 
@@ -151,14 +156,14 @@ def get_data(number):
         market_history_data = api.get_market_history(market_name, count=1)["result"][0]
         balance_curr_code = market_name.split('-')[1]
         json_data = ({
-            'Number': str(number),
+            'Number': number,
             'balance_curr_code': balance_curr_code,
             'last_price': market_history_data['Price'],
             'TimeStamp': market_history_data['TimeStamp']})
 
         db_collection.insert_one(json_data)
         print('------table name-----')
-        print(collection)
+        print(collection_name)
         print('Inserted: \n{}'.format(json_data))
 
 if __name__ == "__main__":
@@ -166,7 +171,9 @@ if __name__ == "__main__":
         # Time setting.
         number = 0
         next_call = dt.datetime.now()
-        time_between_calls = dt.timedelta(seconds=int(get_arg(2, 300)))
+        # time_between_calls = dt.timedelta(seconds=int(get_arg(2, 120)))
+        time_between_calls = dt.timedelta(seconds=120)
+
         # Main loop.
         while True:
             now = dt.datetime.now()

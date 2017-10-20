@@ -120,17 +120,10 @@ def get_data(number):
 
     collection_name = '{}_bittrex_account'.format(trader)
     try:
-        # db_user = 'Writeuser'
-        # db_password = os.environ['MONGO-WRITE-PASSWORD']
-        # db_password = 'TYHJ8ttfZ6JPRvSZbqcW'
-        # host = 'mongodb://{}:{}@127.0.0.1'.format(db_user, db_password)
-        # host = 'mongodb://{}:{}@10.8.0.2'.format(db_user, db_password)
-
         mongoserver_uri = "mongodb://Writeuser:TYHJ8ttfZ6JPRvSZbqcW@10.8.0.2:27017/admin"
         # mongoserver_uri = "mongodb://Readuser:jbh4S3pCpTGCdIGGVOU6@127.0.0:1"
         connection = MongoClient(host=mongoserver_uri)
         db = connection['BB_coins']
-        # db_collection = db['VIVEK_Bittrex_account']
         db_collection = db[collection_name]
 
     except KeyError:
@@ -171,8 +164,7 @@ if __name__ == "__main__":
         # Time setting.
         number = 0
         next_call = dt.datetime.now()
-        # time_between_calls = dt.timedelta(seconds=int(get_arg(2, 120)))
-        time_between_calls = dt.timedelta(seconds=120)
+        time_between_calls = dt.timedelta(seconds=300)
 
         # Main loop.
         while True:
